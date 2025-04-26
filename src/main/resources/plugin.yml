@@ -1,0 +1,14 @@
+name: VotePermission
+version: '1.0'
+main: ceres.vp.VotePermissionCore
+api-version: '1.20'
+prefix: VoteRange
+load: STARTUP
+depend:
+  - LuckPerms
+  - VotifierPlus
+authors: [ Ceres ]
+description: Añade un permiso al jugador al votar
+permissions:
+  votepermission.vote:
+    description: Los jugadores que an votado por el servidor
