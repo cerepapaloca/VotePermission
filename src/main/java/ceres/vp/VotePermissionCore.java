@@ -1,9 +1,9 @@
 package ceres.vp;
 
 import com.vexsoftware.votifier.model.VotifierEvent;
-import net.luckperms.api.LuckPerms;
-import net.luckperms.api.node.types.InheritanceNode;
+import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,16 +15,21 @@ import java.util.HashSet;
 
 public final class VotePermissionCore extends JavaPlugin implements Listener {
 
-    private static LuckPerms lp;
     private final HashSet<String> playersNames = new HashSet<>();
+    @Getter
+    private static VotePermissionCore instance;
+
+    @Override
+    public void onLoad() {
+        instance = this;
+    }
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         // Obtiene la instancia de luckPerms
-        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-        if (provider != null) {
-            lp = provider.getProvider();
-        }else throw new RuntimeException("LuckPerms not found");
+        PluginCommand pluginCommand = getCommand("vote");
+        if (pluginCommand != null) pluginCommand.setExecutor(new VoteCommand());
         getServer().getPluginManager().registerEvents(this, this);
     }
 
@@ -36,7 +41,7 @@ public final class VotePermissionCore extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onVote(VotifierEvent event) {
-        Player player = Bukkit.getPlayer(event.getEventName());
+        Player player = Bukkit.getPlayer(event.getVote().getUsername());
         if (player != null) {
             reward(player);
         }else {
@@ -59,7 +64,7 @@ public final class VotePermissionCore extends JavaPlugin implements Listener {
 
     private void reward(Player player) {
         playersNames.remove(player.getName());
-        lp.getUserManager().modifyUser(player.getUniqueId(), user -> user.data().add(InheritanceNode.builder("vote").build()));
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), String.format("lp user %s parent add vote", player.getName()));
     }
 
 }
